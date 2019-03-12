@@ -155,6 +155,8 @@ class FormatSerializer(Encoder):
         yield "IsMethod", inspect.ismethod(o),
         yield "IsCallable", callable(o),
 
+        yield "Session", self.get_property('external_session_uuid')
+
         if callable(o):
             try:
                 yield "Arguments", map(force_text, first(inspect.getargspec(o)))
