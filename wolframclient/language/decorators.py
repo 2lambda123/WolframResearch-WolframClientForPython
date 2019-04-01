@@ -38,7 +38,7 @@ def safe_wl_execute(function,
             try:
                 e.set_traceback(*sys.exc_info())
                 return export(e, **export_opts)
-            except Exception as e:
+            except Exception:
                 pass
 
         try:
