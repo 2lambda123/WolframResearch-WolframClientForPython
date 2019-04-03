@@ -4,7 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import decimal
 import unittest
-from collections import OrderedDict
+from wolframclient.utils.api import collections
 
 from wolframclient.language import wl, wlexpr
 from wolframclient.serializers import export
@@ -244,12 +244,12 @@ class TestCase(SerializeTest):
         self.serialize_compare({}, wxf)
 
     def test_dicts(self):
-        value = OrderedDict(enumerate('abc'))
+        value = collections.OrderedDict(enumerate('abc'))
         wxf = b'8:A\x03-C\x00S\x01a-C\x01S\x01b-C\x02S\x01c'
         self.serialize_compare(value, wxf)
 
     def test_no_enforcing_valid(self):
-        value = OrderedDict(enumerate('abc'))
+        value = collections.OrderedDict(enumerate('abc'))
         wxf = b'8:A\x03-C\x00S\x01a-C\x01S\x01b-C\x02S\x01c'
         self.serialize_compare(value, wxf, enforce=False)
 

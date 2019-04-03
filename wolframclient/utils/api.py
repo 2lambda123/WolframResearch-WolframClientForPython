@@ -169,3 +169,9 @@ externalevaluate = API(
     execute_from_file='wolframclient.utils.externalevaluate.execute_from_file',
     start_zmq_loop='wolframclient.utils.externalevaluate.start_zmq_loop',
 )
+
+collections = API(
+    Sequence = ('collections.abc.Sequence', 'collections.Sequence'),
+    OrderedDict = 'collections.OrderedDict',
+    defaultdict = 'collections.defaultdict',
+)

@@ -2,8 +2,8 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from collections import OrderedDict
 from itertools import starmap
+from wolframclient.utils.api import collections
 
 from wolframclient.utils.api import pandas
 from wolframclient.utils.dispatch import Dispatch
@@ -60,12 +60,12 @@ def encode_as_timeseries(serializer, o, length):
 
 
 def _distribute_multikey(o):
-    expr_dict = OrderedDict()
+    expr_dict = collections.OrderedDict()
     for multikey, value in o.iteritems():
         cur_dict = expr_dict
         for key in multikey[:-1]:
             if key not in cur_dict:
-                cur_dict[key] = OrderedDict()
+                cur_dict[key] = collections.OrderedDict()
             cur_dict = cur_dict[key]
         cur_dict[multikey[-1]] = value
     return expr_dict

@@ -5,8 +5,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import datetime
 import decimal
 import fractions
-from collections import OrderedDict
-
+from wolframclient.utils.api import collections
 from wolframclient.language import Global, System, wl, wlexpr
 from wolframclient.serializers import export
 from wolframclient.utils import six
@@ -46,7 +45,7 @@ class TestCase(BaseTestCase):
         #instances of dict are converted using RuleDelayed
 
         self.compare(
-            OrderedDict(enumerate([2, True, False])),
+            collections.OrderedDict(enumerate([2, True, False])),
             b'<|0 -> 2, 1 -> True, 2 -> False|>')
 
         #instances of Association are converted using Rule, in WXF they use WXFFunction

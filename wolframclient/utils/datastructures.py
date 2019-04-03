@@ -2,10 +2,9 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from collections import OrderedDict
+from wolframclient.utils.api import collections
 
-
-class Association(OrderedDict):
+class Association(collections.OrderedDict):
     """ A :class:`~collections.OrderedDict` that serializes to an Association"""
 
     def __repr__(self):

@@ -2,9 +2,8 @@
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-from collections import OrderedDict
-
-import pandas
+from wolframclient.utils.api import collections
+import numpy
 
 import numpy
 from wolframclient.serializers import export
@@ -37,7 +36,7 @@ class PandasSeriesTestCase(PandasTestCase):
         return arr, index
 
     def sparse_series_dict(self):
-        d = OrderedDict()
+        d = collections.OrderedDict()
         d['b'] = 1
         d['a'] = 0
         d['c'] = 2
@@ -250,7 +249,7 @@ class PandasSeriesTestCase(PandasTestCase):
 
 class PandasDataFrameTestCase(PandasTestCase):
     def dataframe_from_dict(self):
-        d = OrderedDict()
+        d = collections.OrderedDict()
         d['a'] = {'x': 1}
         d['b'] = {'x': [-1]}
         return pandas.DataFrame.from_dict(d)
