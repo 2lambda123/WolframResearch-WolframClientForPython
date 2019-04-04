@@ -16,22 +16,17 @@ from wolframclient.utils.decorators import decorate
 __all__ = ['WXFConsumer', 'WXFConsumerNumpy']
 
 
-class WLNumericArray(WLSerializable, collections.Sequence):
-    def __init__(self, array, type=None):
-        self.array = array
-        self.type = type
+class WLNumericArray(WLSerializable, list):
+
+    def __init__(self, array, numeric_type=None):
+        self.numeric_type = numeric_type
+        super(WLNumericArray, self).__init__(array)
 
     def to_wl(self):
-        return wl.NumericArray(self.array, self.type or wl.Automatic)
-
-    def __getitem__(self, k):
-        return self.array.__getitem__(k)
-
-    def __len__(self):
-        return len(self.array)
+        return wl.NumericArray(iter(self), self.numeric_type or wl.Automatic)
 
     def __repr__(self):
-        return '<%s %s>' % (self.__class__.__name__, repr(self.array))
+        return '<%s %s>' % (self.__class__.__name__, list.__repr__(self))
 
 
 class WXFConsumer(object):
@@ -235,7 +230,6 @@ class WXFConsumer(object):
         """Consume a :class:`~wolframclient.deserializers.wxf.wxfparser.WXFToken` of type *real* as a :class:`float`."""
         return current_token.data
 
-    @decorate(WLNumericArray)
     def consume_numeric_array(self, current_token, tokens, **kwargs):
         """Consume a :class:`~wolframclient.deserializers.wxf.wxfparser.WXFToken` of type *raw array*.
 
@@ -289,13 +283,13 @@ class WXFConsumer(object):
                 dimensions.append(2)
                 as_list = view.cast(
                     self.unpack_mapping[current_token.array_type],
-                    shape=dimensions).tolist()
-                self._to_complex(as_list, len(current_token.dimensions), 0)
+                    shape=dimensions)
+                self._to_complex(WLNumericArray(as_list), len(current_token.dimensions), 0)
                 return as_list
             else:
-                return view.cast(
+                return WLNumericArray(view.cast(
                     self.unpack_mapping[current_token.array_type],
-                    shape=current_token.dimensions).tolist()
+                    shape=current_token.dimensions))
     else:
         unpack_mapping = {
             constants.ARRAY_TYPES.Integer8: constants.StructInt8LE,
@@ -320,7 +314,7 @@ class WXFConsumer(object):
 
         def _build_array_from_bytes(self, data, offset, array_type, dimensions,
                                     current_dim):
-            new_array = list()
+            new_array = WLNumericArray()
             if current_dim < len(dimensions) - 1:
                 for i in range(dimensions[current_dim]):
                     new_elem, offset = self._build_array_from_bytes(
