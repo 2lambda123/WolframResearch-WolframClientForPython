@@ -6,11 +6,32 @@ import decimal
 import re
 
 from wolframclient.exception import WolframParserException
+from wolframclient.language import wl
 from wolframclient.language.expression import WLFunction, WLSymbol
+from wolframclient.serializers.serializable import WLSerializable
 from wolframclient.serializers.wxfencoder import constants
-from wolframclient.utils.api import numpy
+from wolframclient.utils.api import collections, numpy
+from wolframclient.utils.decorators import decorate
 
 __all__ = ['WXFConsumer', 'WXFConsumerNumpy']
+
+
+class WLNumericArray(WLSerializable, collections.Sequence):
+    def __init__(self, array, type=None):
+        self.array = array
+        self.type = type
+
+    def to_wl(self):
+        return wl.NumericArray(self.array, self.type or wl.Automatic)
+
+    def __getitem__(self, k):
+        return self.array.__getitem__(k)
+
+    def __len__(self):
+        return len(self.array)
+
+    def __repr__(self):
+        return '<%s %s>' % (self.__class__.__name__, repr(self.array))
 
 
 class WXFConsumer(object):
@@ -214,6 +235,7 @@ class WXFConsumer(object):
         """Consume a :class:`~wolframclient.deserializers.wxf.wxfparser.WXFToken` of type *real* as a :class:`float`."""
         return current_token.data
 
+    @decorate(WLNumericArray)
     def consume_numeric_array(self, current_token, tokens, **kwargs):
         """Consume a :class:`~wolframclient.deserializers.wxf.wxfparser.WXFToken` of type *raw array*.
 
