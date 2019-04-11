@@ -10,15 +10,15 @@ from wolframclient.exception import (
     RequestException, WolframEvaluationException, WolframLanguageException,
     WolframParserException)
 from wolframclient.utils import six
-from wolframclient.utils.logger import  str_trim
 from wolframclient.utils.api import json
 from wolframclient.utils.decorators import cached_property
+from wolframclient.utils.logger import str_trim
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     'WolframResult', 'WolframAPIResponseBuilder', 'WolframAPIResponse',
-    'WolframCloudEvaluationWXFResponse', 'WolframCloudEvaluationJSONResponse',
+    'WolframCloudEvaluationResponse', 'WolframCloudEvaluationWXFResponse', 'WolframCloudEvaluationJSONResponse',
     'WolframKernelEvaluationResult', 'WolframAPIResponseAsync',
     'WolframEvaluationJSONResponseAsync', 'WolframEvaluationWXFResponseAsync'
 ]
@@ -29,11 +29,11 @@ class WolframResultBase(object):
 
 
 class WolframResult(WolframResultBase):
-    """Most generic result object.
+    """ The most generic result object.
 
-    The actual result is returned via method :func:`~wolframclient.evaluation.result.WolframResult.get`.
-    If the result is a `success`, the field `result` is returned otherwise `failure` is returned and most
-    likely contains an error message.
+    The actual result is returned via the method :func:`~wolframclient.evaluation.result.WolframResult.get`. If the
+    result is a `success`, the field `result` is returned; otherwise, `failure` is returned and most likely contains an
+    error message.
     """
 
     def __init__(self, result=None, failure=None):
@@ -448,7 +448,12 @@ _DEFAULT_DECODERS = {
 
 
 class WolframAPIResponse(WolframResult):
-    """Generic API response."""
+    """ A generic API response.
+
+    This class is lazily constructed when the response body becomes available.
+
+    A decoder is inferred from the content type. Currently JSON and WXF formats are supported.
+    """
 
     def __init__(self, response, decoder=None):
         self.response = response
@@ -487,7 +492,16 @@ class WolframAPIResponse(WolframResult):
 
 
 class WolframAPIResponseAsync(WolframAPIResponse):
+    """ Asynchronous counterpart of :class:`~wolframclient.evaluation.result.WolframAPIResponse`, awaiting for the
+    response body.
+
+    Most of the class logic is implemented in :data:`WolframAPIResponse`, except the build method which has to be a
+    coroutine.
+    """
     async def get(self):
+        """ Return the result or raise an exception based on the success status.
+
+        This is a coroutine."""
         if not self._built:
             await self.build()
         return self._get()
@@ -595,7 +609,8 @@ class WolframAPIResponse400(WolframAPIFailureResponse):
                 self.parsed_response = self._unexpected_content_type()
         except (json.JSONDecodeError, WolframParserException):
             logger.fatal('Failed to parse server response as %s:\n%s',
-                         self.content_type, str_trim(self.response.content(), max_char=200))
+                         self.content_type,
+                         str_trim(self.response.content(), max_char=200))
             raise self._failed_to_parse()
         self._update_from_response()
         self._built = True
@@ -611,9 +626,13 @@ class WolframAPIResponse400(WolframAPIFailureResponse):
             self.response, msg='Failed to parse server response.')
 
     def _unexpected_content_type(self):
-        logger.warning('Response content-type: %s is not supported. Cannot decode content: %s', self.content_type, str_trim(self.response.content()))
+        logger.warning(
+            'Response content-type: %s is not supported. Cannot decode content: %s',
+            self.content_type, str_trim(self.response.content()))
         return {
-            'Failure': 'Cannot decode server response. No decoder found for content-type: %s.' % self.content_type
+            'Failure':
+            'Cannot decode server response. No decoder found for content-type: %s.'
+            % self.content_type
         }
 
     def _update_from_response(self):
@@ -648,9 +667,13 @@ class WolframAPIResponse400Async(WolframAPIResponse400,
         self._built = True
 
     async def _unexpected_content_type(self):
-        logger.warning('Response content-type: %s is not supported. Cannot decode content: %s', self.content_type, str_trim(await self.response.content()))
+        logger.warning(
+            'Response content-type: %s is not supported. Cannot decode content: %s',
+            self.content_type, str_trim(await self.response.content()))
         return {
-            'Failure': 'Cannot decode server response. No decoder found for content-type: %s.' % self.content_type
+            'Failure':
+            'Cannot decode server response. No decoder found for content-type: %s.'
+            % self.content_type
         }
 
     async def fields_in_error(self):
@@ -693,7 +716,7 @@ class WolframAPIResponse404Async(WolframAPIResponse404,
 
 
 class WolframAPIResponseGeneric(WolframAPIFailureResponse):
-    async def build(self):
+    def build(self):
         self._failure = self.response.text()
         self._built = True
 

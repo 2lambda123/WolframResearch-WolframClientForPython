@@ -3,12 +3,10 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from wolframclient.utils.api import collections
-import numpy
 
-import numpy
 from wolframclient.serializers import export
+from wolframclient.utils.api import numpy, pandas
 from wolframclient.utils.tests import TestCase as BaseTestCase
-
 
 class PandasTestCase(BaseTestCase):
     def export_compare(self, o, wl=None, wxf=None, **kwargs):

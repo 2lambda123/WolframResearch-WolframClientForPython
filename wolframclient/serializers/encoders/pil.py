@@ -18,7 +18,7 @@ encoder = Dispatch()
     are supported, fortunatelly the most common ones.
 
     When the internal PIL representation does not correspond to one of the Wolfram Language,
-    the image is converted to its format, if specified, or ultimatelly to PNG. This may fail,
+    the image is converted to its format, if specified, or ultimately to PNG. This may fail,
     in which case an exception is raised and there is nothing more we can do.
 
     In theory we could represent any image, but due to :func:`~PIL.Image.convert()` behavior 
@@ -44,14 +44,9 @@ SYS_IS_LE = sys.byteorder == 'little'
 
 
 def normalize_array(array):
-    endianness = array.dtype.byteorder
-    # Ensure little endian
-    if endianness == '>' or (endianness == '=' and not SYS_IS_LE):
-        array.byteswap().newbyteorder()
     if array.dtype == numpy.dtype('bool'):
         array = array.astype('<u1')
     return array
-
 
 @encoder.dispatch(PIL.Image)
 def encode_image(serializer, img):
@@ -76,5 +71,5 @@ def encode_image(serializer, img):
         raise NotImplementedError('Format %s is not supported.' % img_format)
     return serializer.serialize_function(
         serializer.serialize_symbol(b'ImportByteArray'),
-        (serializer.serialize_bytes(stream.getvalue()),
+        (serializer.serialize_bytes(stream.getvalue(), as_byte_array = True),
          serializer.serialize_string(img_format)))
