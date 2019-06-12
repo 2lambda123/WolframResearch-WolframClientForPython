@@ -7,11 +7,21 @@ from itertools import chain
 from wolframclient.serializers.base import FormatSerializer
 from wolframclient.serializers.utils import py_encode_decimal, safe_len
 from wolframclient.serializers.wxfencoder.constants import (
-    ARRAY_TYPES, WXF_CONSTANTS, WXF_HEADER_COMPRESS, WXF_HEADER_SEPARATOR,
-    WXF_VERSION)
+    ARRAY_TYPES,
+    WXF_CONSTANTS,
+    WXF_HEADER_COMPRESS,
+    WXF_HEADER_SEPARATOR,
+    WXF_VERSION,
+)
 from wolframclient.serializers.wxfencoder.utils import (
-    float_to_bytes, integer_size, integer_to_bytes, numeric_array_to_wxf,
-    varint_bytes, write_varint)
+    float_to_bytes,
+    integer_size,
+    integer_to_bytes,
+    numeric_array_to_wxf,
+    packed_array_to_wxf,
+    varint_bytes,
+    write_varint,
+)
 from wolframclient.utils import six
 from wolframclient.utils.api import zlib
 from wolframclient.utils.encoding import force_bytes, force_text
@@ -69,10 +79,11 @@ class WXFSerializer(FormatSerializer):
 
         iterable, length = get_length(args, **opts)
 
-        return chain((WXF_CONSTANTS.Function, varint_bytes(length)), head,
-                     chain.from_iterable(iterable))
+        return chain(
+            (WXF_CONSTANTS.Function, varint_bytes(length)), head, chain.from_iterable(iterable)
+        )
 
-    #numeric
+    # numeric
     def serialize_int(self, number):
         try:
             wxf_type, int_size = integer_size(number)
@@ -80,10 +91,10 @@ class WXFSerializer(FormatSerializer):
             yield integer_to_bytes(number, int_size)
 
         except ValueError:
-            #WXFExprInteger is raising a ValueError if the integer is not in the appropriate bounds.
-            #that check needs to be done in case, it's better to do it only once.
+            # WXFExprInteger is raising a ValueError if the integer is not in the appropriate bounds.
+            # that check needs to be done in case, it's better to do it only once.
 
-            number = b'%i' % number
+            number = b"%i" % number
 
             yield WXF_CONSTANTS.BigInteger
             yield varint_bytes(len(number))
@@ -99,7 +110,7 @@ class WXFSerializer(FormatSerializer):
         yield varint_bytes(len(number))
         yield number
 
-    #text / bytes
+    # text / bytes
 
     def serialize_string(self, string):
         string = force_bytes(string)
@@ -107,24 +118,29 @@ class WXFSerializer(FormatSerializer):
         yield varint_bytes(len(string))
         yield string
 
-    def serialize_bytes(self, bytes, as_byte_array = not six.PY2):
+    def serialize_bytes(self, bytes, as_byte_array=not six.PY2):
         if as_byte_array:
             yield WXF_CONSTANTS.BinaryString
             yield varint_bytes(len(bytes))
             yield bytes
         else:
-            for token in self.serialize_string(force_text(bytes, encoding = 'iso8859-1')):
+            for token in self.serialize_string(force_text(bytes, encoding="iso8859-1")):
                 yield token
 
     def serialize_mapping(self, keyvalue, **opts):
-        #the normalizer is always sending an generator key, value
+        # the normalizer is always sending an generator key, value
 
         iterable, length = get_length(keyvalue, **opts)
 
-        return chain((WXF_CONSTANTS.Association, varint_bytes(length)),
-                     chain.from_iterable(
-                         chain((WXF_CONSTANTS.Rule, ), key, value)
-                         for key, value in iterable))
+        return chain(
+            (WXF_CONSTANTS.Association, varint_bytes(length)),
+            chain.from_iterable(
+                chain((WXF_CONSTANTS.Rule,), key, value) for key, value in iterable
+            ),
+        )
 
     def serialize_numeric_array(self, data, dimensions, wl_type):
         return numeric_array_to_wxf(data, dimensions, wl_type)
+
+    def serialize_packed_array(self, data, dimensions, wl_type):
+        return packed_array_to_wxf(data, dimensions, wl_type)
