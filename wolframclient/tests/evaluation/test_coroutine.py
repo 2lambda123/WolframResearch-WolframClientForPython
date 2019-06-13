@@ -29,18 +29,34 @@ logger.setLevel(logging.INFO)
 
 LOOP = get_event_loop()
 
+def start_async_session(path):
+    async_session = WolframLanguageAsyncSession(
+        path, kernel_loglevel=logging.INFO
+    )
+    async_session.set_parameter("STARTUP_TIMEOUT", 5)
+    async_session.set_parameter("TERMINATE_TIMEOUT", 3)
+    LOOP.run_until_complete(async_session.start())    
+
+    return async_session
+
+def start_pool(path):
+    pool = WolframEvaluatorPool(
+        cls.KERNEL_PATH,
+        kernel_loglevel=logging.INFO,
+        STARTUP_TIMEOUT=5,
+        TERMINATE_TIMEOUT=3,
+    )
+    LOOP.run_until_complete(pool.start())
+
+    return pool
+
 class TestCoroutineSession(BaseTestCase):
 
     KERNEL_PATH = json_config and json_config.get("kernel", None) or None
 
     @classmethod
     def setUpClass(cls):
-        cls.async_session = WolframLanguageAsyncSession(
-            cls.KERNEL_PATH, kernel_loglevel=logging.INFO
-        )
-        cls.async_session.set_parameter("STARTUP_TIMEOUT", 5)
-        cls.async_session.set_parameter("TERMINATE_TIMEOUT", 3)
-        LOOP.run_until_complete(cls.async_session.start())
+        cls.async_session = start_async_session(cls.KERNEL_PATH)
 
     @classmethod
     def tearDownClass(cls):
@@ -128,13 +144,7 @@ class TestKernelPool(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.pool = WolframEvaluatorPool(
-            cls.KERNEL_PATH,
-            kernel_loglevel=logging.INFO,
-            STARTUP_TIMEOUT=5,
-            TERMINATE_TIMEOUT=3,
-        )
-        LOOP.run_until_complete(cls.pool.start())
+        cls.pool = start_pool(cls.KERNEL_PATH)
 
     @run_in_loop
     async def test_eval_wlsymbol(self):
@@ -193,9 +203,13 @@ class TestKernelPool(BaseTestCase):
 
 
 @skip_for_missing_config
-class TestKernelCloudPool(TestKernelPool):
+class TestKernelCloudPool(BaseTestCase):
 
     KERNEL_PATH = json_config and json_config.get("kernel", None) or None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pool = start_pool(cls.KERNEL_PATH)
 
     @run_in_loop
     async def test_pool_from_one_cloud(self):
