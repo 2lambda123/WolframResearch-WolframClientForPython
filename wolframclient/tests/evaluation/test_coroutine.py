@@ -29,29 +29,26 @@ logger.setLevel(logging.INFO)
 
 LOOP = get_event_loop()
 
+
 def start_async_session():
-    async_session = WolframLanguageAsyncSession(
-        kernel_path, kernel_loglevel=logging.INFO
-    )
+    async_session = WolframLanguageAsyncSession(kernel_path, kernel_loglevel=logging.INFO)
     async_session.set_parameter("STARTUP_TIMEOUT", 5)
     async_session.set_parameter("TERMINATE_TIMEOUT", 3)
-    LOOP.run_until_complete(async_session.start())    
+    LOOP.run_until_complete(async_session.start())
 
     return async_session
 
+
 def start_pool():
     pool = WolframEvaluatorPool(
-        kernel_path,
-        kernel_loglevel=logging.INFO,
-        STARTUP_TIMEOUT=5,
-        TERMINATE_TIMEOUT=3,
+        kernel_path, kernel_loglevel=logging.INFO, STARTUP_TIMEOUT=5, TERMINATE_TIMEOUT=3
     )
     LOOP.run_until_complete(pool.start())
 
     return pool
 
-class TestCoroutineSession(BaseTestCase):
 
+class TestCoroutineSession(BaseTestCase):
     @classmethod
     def setUpClass(cls):
         cls.async_session = start_async_session()
@@ -137,7 +134,6 @@ class TestCoroutineSession(BaseTestCase):
 
 
 class TestKernelPool(BaseTestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.pool = start_pool()
@@ -200,7 +196,6 @@ class TestKernelPool(BaseTestCase):
 
 @skip_for_missing_config
 class TestKernelCloudPool(BaseTestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.pool = start_pool()
