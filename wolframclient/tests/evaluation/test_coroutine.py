@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from __future__ import absolute_import, print_function, unicode_literals
 
 import logging
@@ -29,13 +27,11 @@ logger.setLevel(logging.INFO)
 
 LOOP = get_event_loop()
 
-
 def start_async_session():
     async_session = WolframLanguageAsyncSession(kernel_path, kernel_loglevel=logging.INFO)
     async_session.set_parameter("STARTUP_TIMEOUT", 5)
     async_session.set_parameter("TERMINATE_TIMEOUT", 3)
     LOOP.run_until_complete(async_session.start())
-
     return async_session
 
 
@@ -44,7 +40,6 @@ def start_pool():
         kernel_path, kernel_loglevel=logging.INFO, STARTUP_TIMEOUT=5, TERMINATE_TIMEOUT=3
     )
     LOOP.run_until_complete(pool.start())
-
     return pool
 
 
