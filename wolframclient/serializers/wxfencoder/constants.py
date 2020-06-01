@@ -4,7 +4,7 @@ import struct
 
 from wolframclient.utils import six
 from wolframclient.utils.datastructures import Settings
-
+from functools import partial
 if six.JYTHON:
     pass
 
@@ -104,17 +104,27 @@ VALID_PACKED_ARRAY_LABEL_TYPES = frozenset(
     )
 )
 
+def make_struct(format, size = 1):
+    s = struct.Struct(b"<%s%s" % (size > 1 and size or b"", format))
+    return Settings(
+        format = s.format,
+        as_size = partial(make_struct, format),
+        pack = s.pack,
+        pack_into = s.pack_into,
+        unpack = s.unpack,
+    )
+
 STRUCT_MAPPING = Settings(
-    Integer8=struct.Struct(b"<b"),
-    UnsignedInteger8=struct.Struct(b"<B"),
-    Integer16=struct.Struct(b"<h"),
-    UnsignedInteger16=struct.Struct(b"<H"),
-    Integer32=struct.Struct(b"<i"),
-    UnsignedInteger32=struct.Struct(b"<I"),
-    Integer64=struct.Struct(b"<q"),
-    UnsignedInteger64=struct.Struct(b"<Q"),
-    Real32=struct.Struct(b"<f"),
-    Real64=struct.Struct(b"<d"),
-    ComplexReal32=struct.Struct(b"<f"),
-    ComplexReal64=struct.Struct(b"<d"),
+    Integer8=make_struct(b"b"),
+    UnsignedInteger8=make_struct(b"B"),
+    Integer16=make_struct(b"h"),
+    UnsignedInteger16=make_struct(b"H"),
+    Integer32=make_struct(b"i"),
+    UnsignedInteger32=make_struct(b"I"),
+    Integer64=make_struct(b"q"),
+    UnsignedInteger64=make_struct(b"Q"),
+    Real32=make_struct(b"f"),
+    Real64=make_struct(b"d"),
+    ComplexReal32=make_struct(b"f"),
+    ComplexReal64=make_struct(b"d"),
 )
