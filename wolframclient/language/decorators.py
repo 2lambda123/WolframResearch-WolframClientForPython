@@ -8,6 +8,7 @@ from wolframclient.language import wl
 from wolframclient.language.exceptions import WolframLanguageException
 from wolframclient.serializers import DEFAULT_FORMAT, export
 from wolframclient.utils.encoding import force_text, safe_force_text
+from wolframclient.utils.functional import first
 
 DEFAULT_UNKNOWN_FAILURE = {
     "wxf": b"8:f\x02s\x07FailureS\x0dPythonFailureA\x01-S\x0fMessageTemplateS\x1aUnexpected error occurred.",
@@ -15,12 +16,15 @@ DEFAULT_UNKNOWN_FAILURE = {
 }
 
 
-def safe_wl_execute(function, args=(), opts={}, export_opts={}, exception_class=None):
+def safe_wl_execute_many(function, args=(), opts={}, export_opts={}, exception_class=None):
 
     __traceback_hidden_variables__ = True
 
     try:
-        return export(function(*args, **opts), **export_opts)
+
+        for r in function(*args, **opts):
+            yield export(r, **export_opts)
+
     except Exception as export_exception:
         try:
             try:
@@ -31,22 +35,25 @@ def safe_wl_execute(function, args=(), opts={}, export_opts={}, exception_class=
                 if isinstance(export_exception, WolframLanguageException):
                     try:
                         export_exception.set_traceback(*sys.exc_info())
-                        return export(export_exception, **export_opts)
+                        yield export(export_exception, **export_opts)
+                        return
                     except Exception:
                         pass
 
                 if not exception_class or exception_class is WolframLanguageException:
-                    return export(
+                    yield export(
                         WolframLanguageException(export_exception, exec_info=sys.exc_info()),
                         **export_opts
                     )
 
-                # A custom error class might fail, if this is happening then we can try to use the built in one
-                return export(
-                    exception_class(export_exception, exec_info=sys.exc_info()), **export_opts
-                )
+                else:
+                    # A custom error class might fail, if this is happening then we can try to use the built in one
+                    yield export(
+                        exception_class(export_exception, exec_info=sys.exc_info()),
+                        **export_opts
+                    )
             except Exception as exception_export_err:
-                return export(
+                yield export(
                     WolframLanguageException(exception_export_err, exec_info=sys.exc_info()),
                     target_format=export_opts.get("target_format", DEFAULT_FORMAT),
                     encoder="wolframclient.serializers.encoders.builtin.encoder",
@@ -58,7 +65,7 @@ def safe_wl_execute(function, args=(), opts={}, export_opts={}, exception_class=
             # Everything went wrong, including the code that was supposed to return a traceback, or the custom
             # normalizer is doing something it should not. This should never happen.
             try:
-                return export(
+                yield export(
                     wl.Failure(
                         "PythonFailure",
                         {
@@ -77,9 +84,15 @@ def safe_wl_execute(function, args=(), opts={}, export_opts={}, exception_class=
                 # Something went worst.
                 # this might happen with import errors / syntax errors in third party pluging that are loading the
                 # exporter and doing some real damage to the dispatcher we are using.
-                return DEFAULT_UNKNOWN_FAILURE[
-                    export_opts.get("target_format", DEFAULT_FORMAT)
-                ]
+                yield DEFAULT_UNKNOWN_FAILURE[export_opts.get("target_format", DEFAULT_FORMAT)]
+
+
+def safe_wl_execute(function, *args, **opts):
+    return first(
+        safe_wl_execute_many(
+            lambda *args1, **opts1: (function(*args1, **opts1),), *args, **opts
+        )
+    )
 
 
 def to_wl(exception_class=None, **export_opts):

@@ -6,7 +6,7 @@ import sys
 
 from wolframclient.deserializers import binary_deserialize
 from wolframclient.language import wl
-from wolframclient.language.decorators import to_wl
+from wolframclient.language.decorators import safe_wl_execute_many
 from wolframclient.language.side_effects import side_effect_logger
 from wolframclient.serializers import export
 from wolframclient.utils import six
@@ -41,6 +41,47 @@ else:
 
     def Module(code):
         return ast.Module(code)
+
+
+def iter_with_last(iterable):
+
+    iterable = iter(iterable)
+    try:
+        prev = next(iterable)
+    except StopIteration:
+        return
+    while True:
+
+        try:
+            current = next(iterable)
+        except StopIteration:
+            break
+
+        yield prev, False
+
+        prev = current
+
+    try:
+        yield current, True
+    except UnboundLocalError:
+        yield prev, True
+
+
+class MergedMessages:
+
+    merge_next = wl.ExternalEvaluate.Private.ExternalEvaluateMergeNext
+    missing = object()
+
+    def __init__(self, func, iterable):
+        self.func = func
+        self.iterable = iterable
+
+    def __iter__(self):
+        for el, is_last in iter_with_last(self.iterable):
+            if is_last:
+                yield el
+            else:
+                yield self.merge_next(self.func, el)
 
 
 def EvaluationEnvironment(code, session_data={}, constants=None, **extra):
@@ -175,10 +216,16 @@ def handle_message(socket, evaluate_message=evaluate_message, consumer=None):
     __traceback_hidden_variables__ = True
 
     message = binary_deserialize(socket.recv(copy=False).buffer, consumer=consumer)
+
     result = evaluate_message(**message)
 
+    if isinstance(result, MergedMessages):
+        for chunk in result:
+            yield chunk
+    else:
+        yield result
+
     sys.stdout.flush()
-    return result
 
 
 def start_zmq_instance(port=None, write_to_stdout=True, **opts):
@@ -209,9 +256,14 @@ def start_zmq_loop(
     **opts
 ):
 
-    handler = to_wl(exception_class=exception_class, **export_kwargs)(handle_message)
-
     socket = start_zmq_instance(**opts)
+
+    handler = lambda *args, **opts: safe_wl_execute_many(
+        handle_message,
+        opts=dict(socket=socket, evaluate_message=evaluate_message, consumer=consumer),
+        exception_class=exception_class,
+        export_opts=export_kwargs,
+    )
 
     stream = SocketWriter(socket)
 
@@ -224,7 +276,8 @@ def start_zmq_loop(
 
     # now sit in a while loop, evaluating input
     while messages < message_limit:
-        stream.write(handler(socket, evaluate_message=evaluate_message, consumer=consumer))
+        for msg in handler():
+            stream.write(msg)
         messages += 1
 
     if redirect_stdout:
