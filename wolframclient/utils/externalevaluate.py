@@ -58,7 +58,7 @@ class MergedMessages:
         self.length = length
 
     def __iter__(self):
-        for el, is_last in enumerate_with_last(self.iterable, length = self.length):
+        for el, _, is_last in enumerate_with_last(self.iterable, length = self.length):
             if is_last:
                 yield el
             else:
