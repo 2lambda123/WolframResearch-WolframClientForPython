@@ -14,7 +14,7 @@ from wolframclient.utils.api import ast, zmq
 from wolframclient.utils.datastructures import Settings
 from wolframclient.utils.encoding import force_text
 from wolframclient.utils.functional import last
-from wolframclient.utils.itertools import safe_len, iter_with_last
+from wolframclient.utils.itertools import safe_len, enumerate_with_last
 
 HIDDEN_VARIABLES = (
     "__loader__",
@@ -58,7 +58,7 @@ class MergedMessages:
         self.length = length
 
     def __iter__(self):
-        for el, is_last in iter_with_last(self.iterable, length = self.length):
+        for el, is_last in enumerate_with_last(self.iterable, length = self.length):
             if is_last:
                 yield el
             else:

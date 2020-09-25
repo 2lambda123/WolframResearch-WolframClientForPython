@@ -4,14 +4,16 @@ def safe_len(obj):
     except TypeError:
         return
 
-def iter_with_last(iterable, length = None):
+def enumerate_with_last(iterable, length = None):
 
     if length is None:
         length = safe_len(iterable)
 
+    i = 0
+
     if length is None:
 
-        iterable = iter(self.iterable)
+        iterable = iter(iterable)
         try:
             prev = next(iterable)
         except StopIteration:
@@ -23,16 +25,18 @@ def iter_with_last(iterable, length = None):
             except StopIteration:
                 break
 
-            yield prev, False
+            yield prev, i, False
 
             prev = current
 
+            i += 1
+
         try:
-            yield current, True
+            yield current, i , True
         except UnboundLocalError:
-            yield prev, True
+            yield prev, i , True
 
     else:
 
-        for i, el in enumerate(iterable, 1):
-            yield el, i == length
+        for i, el in enumerate(iterable):
+            yield el, i, i == (length-1)

@@ -6,7 +6,7 @@ from wolframclient.utils.dispatch import Dispatch
 from wolframclient.utils.encoding import force_bytes, force_text
 from wolframclient.utils.functional import composition, flatten, iterate, partition, riffle
 from wolframclient.utils.tests import TestCase as BaseTestCase
-from wolframclient.utils.itertools import safe_len, iter_with_last
+from wolframclient.utils.itertools import safe_len, enumerate_with_last
 
 class TestCase(BaseTestCase):
     def test_composition(self):
@@ -156,23 +156,25 @@ class TestCase(BaseTestCase):
             def implementation(self, o):
                 return o * 4
 
-    def test_iter_with_last(self):
+    def test_enumerate_with_last(self):
+
+        offset = 2
 
         for m in range(4):
 
             expected = tuple(
-                (i, i == (m-1))
+                (i + offset, i, i == (m-1))
                 for i in range(m)
             )
 
             for args in (
-                (range(m), ),
-                (range(m), m),
-                (tuple(range(m)), ),
-                (tuple(range(m)), m),
+                (iter(range(offset, m + offset)), ),
+                (iter(range(offset, m + offset)), m),
+                (tuple(range(offset, m + offset)), ),
+                (tuple(range(offset, m + offset)), m),
                 ):
 
                 self.assertEqual(
-                    tuple(iter_with_last(*args)),
+                    tuple(enumerate_with_last(*args)),
                     expected
                 )
