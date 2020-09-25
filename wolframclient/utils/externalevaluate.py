@@ -47,7 +47,7 @@ else:
 
 
 
-class MergedMessages:
+class MergedResult:
 
     merge_next = wl.ExternalEvaluate.Private.ExternalEvaluateMergeNext
     missing = object()
@@ -200,7 +200,7 @@ def handle_message(socket, evaluate_message=evaluate_message, consumer=None):
 
     result = evaluate_message(**message)
 
-    if isinstance(result, MergedMessages):
+    if isinstance(result, MergedResult):
         for chunk in result:
             yield chunk
     else:
