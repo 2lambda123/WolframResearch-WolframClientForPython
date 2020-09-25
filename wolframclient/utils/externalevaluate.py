@@ -14,6 +14,7 @@ from wolframclient.utils.api import ast, zmq
 from wolframclient.utils.datastructures import Settings
 from wolframclient.utils.encoding import force_text
 from wolframclient.utils.functional import last
+from wolframclient.utils.itertools import safe_len, iter_with_last
 
 HIDDEN_VARIABLES = (
     "__loader__",
@@ -43,28 +44,7 @@ else:
         return ast.Module(code)
 
 
-def iter_with_last(iterable):
 
-    iterable = iter(iterable)
-    try:
-        prev = next(iterable)
-    except StopIteration:
-        return
-    while True:
-
-        try:
-            current = next(iterable)
-        except StopIteration:
-            break
-
-        yield prev, False
-
-        prev = current
-
-    try:
-        yield current, True
-    except UnboundLocalError:
-        yield prev, True
 
 
 class MergedMessages:
@@ -72,12 +52,13 @@ class MergedMessages:
     merge_next = wl.ExternalEvaluate.Private.ExternalEvaluateMergeNext
     missing = object()
 
-    def __init__(self, func, iterable):
+    def __init__(self, func, iterable, length = None):
         self.func = func
         self.iterable = iterable
+        self.length = length
 
     def __iter__(self):
-        for el, is_last in iter_with_last(self.iterable):
+        for el, is_last in iter_with_last(self.iterable, length = self.length):
             if is_last:
                 yield el
             else:

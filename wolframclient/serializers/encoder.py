@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 from functools import partial
 
-from wolframclient.serializers.utils import safe_len
+from wolframclient.utils.itertools import safe_len
 from wolframclient.utils.api import multiprocessing, pkg_resources
 from wolframclient.utils.dispatch import Dispatch
 from wolframclient.utils.functional import composition, is_iterable, iterate, map

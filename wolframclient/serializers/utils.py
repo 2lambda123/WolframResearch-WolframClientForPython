@@ -32,10 +32,3 @@ def py_encode_text(s):
 
 def py_encode_decimal(number, prec=decimal.getcontext().prec):
     return "{0:f}``{1:d}".format(number, prec).encode("utf-8")
-
-
-def safe_len(obj):
-    try:
-        return len(obj)
-    except TypeError:
-        return

@@ -5,7 +5,7 @@ import math
 from wolframclient.language.array import NumericArray, PackedArray
 from wolframclient.language.expression import WLFunction, WLInputExpression, WLSymbol
 from wolframclient.serializers.serializable import WLSerializable
-from wolframclient.serializers.utils import safe_len
+from wolframclient.utils.itertools import safe_len
 from wolframclient.utils import six
 from wolframclient.utils.datastructures import Association
 from wolframclient.utils.dispatch import Dispatch

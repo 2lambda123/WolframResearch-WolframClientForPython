@@ -3,7 +3,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 from itertools import chain, starmap
 
 from wolframclient.serializers.base import FormatSerializer
-from wolframclient.serializers.utils import py_encode_decimal, safe_len
+from wolframclient.serializers.utils import py_encode_decimal
+from wolframclient.utils.itertools import safe_len
 from wolframclient.serializers.wxfencoder.constants import (
     WXF_CONSTANTS,
     WXF_HEADER_COMPRESS,
