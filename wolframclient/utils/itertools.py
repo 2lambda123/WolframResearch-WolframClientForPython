@@ -9,10 +9,8 @@ def enumerate_with_last(iterable, length = None):
     if length is None:
         length = safe_len(iterable)
 
-    i = 0
-
     if length is None:
-
+        i = 0
         iterable = iter(iterable)
         try:
             prev = next(iterable)
