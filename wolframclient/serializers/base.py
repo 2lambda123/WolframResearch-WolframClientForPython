@@ -63,8 +63,17 @@ class FormatSerializer(Encoder):
     def serialize_bytes(self, bytes, as_byte_array=not six.PY2):
         raise NotImplementedError
 
-
     def serialize_decimal(self, obj):
+
+        if obj.is_infinite():
+            return self.serialize_function(
+                self.serialize_symbol(b"DirectedInfinity"),
+                (self.serialize_int(obj < 0 and -1 or 1),),
+            )
+
+        if obj.is_nan():
+            return self.serialize_symbol(b"Indeterminate")
+
         return self.serialize_fraction(*obj.as_integer_ratio())
 
     def serialize_input_form(self, string):
