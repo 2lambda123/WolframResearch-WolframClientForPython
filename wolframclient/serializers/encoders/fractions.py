@@ -9,4 +9,4 @@ encoder = Dispatch()
 
 @encoder.dispatch(fractions.Fraction)
 def encode_faction(serializer, o):
-    return serializer.serialize_fraction(o)
+    return serializer.serialize_fraction(o.numerator, o.denominator)

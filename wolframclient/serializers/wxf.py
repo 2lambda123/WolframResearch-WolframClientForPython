@@ -104,11 +104,6 @@ class WXFSerializer(FormatSerializer):
         yield WXF_CONSTANTS.Real64
         yield float_to_bytes(number)
 
-    def serialize_decimal(self, number):
-        number = py_encode_decimal(number)
-        yield WXF_CONSTANTS.BigReal
-        yield varint_bytes(len(number))
-        yield number
 
     # text / bytes
 

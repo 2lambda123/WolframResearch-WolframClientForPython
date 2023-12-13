@@ -48,8 +48,6 @@ class WLSerializer(FormatSerializer):
         else:
             return self.serialize_string(force_text(bytes, "iso-8859-1"))
 
-    def serialize_decimal(self, number):
-        yield py_encode_decimal(number)
 
     def serialize_float(self, number):
         yield (b"%.13f" % number).rstrip(b"0")

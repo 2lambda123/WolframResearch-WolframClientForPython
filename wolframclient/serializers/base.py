@@ -57,14 +57,15 @@ class FormatSerializer(Encoder):
     def serialize_float(self, obj):
         raise NotImplementedError
 
-    def serialize_decimal(self, obj):
-        raise NotImplementedError
-
     def serialize_int(self, obj):
         raise NotImplementedError
 
     def serialize_bytes(self, bytes, as_byte_array=not six.PY2):
         raise NotImplementedError
+
+
+    def serialize_decimal(self, obj):
+        return self.serialize_fraction(*obj.as_integer_ratio())
 
     def serialize_input_form(self, string):
         return self.serialize_function(
@@ -104,10 +105,16 @@ class FormatSerializer(Encoder):
             **opts
         )
 
-    def serialize_fraction(self, o):
+    def serialize_fraction(self, numerator, denominator):
+        if numerator == 0 or denominator == 1:
+            return self.serialize_int(numerator)
+
         return self.serialize_function(
             self.serialize_symbol(b"Rational"),
-            (self.serialize_int(o.numerator), self.serialize_int(o.denominator)),
+            (
+                self.serialize_int(numerator),
+                self.serialize_int(denominator),
+            ),
         )
 
     def serialize_complex(self, o):
