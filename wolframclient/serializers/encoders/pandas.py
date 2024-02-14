@@ -4,6 +4,7 @@ from collections import OrderedDict
 from itertools import starmap
 
 from wolframclient.utils.api import pandas
+from wolframclient.utils.api import pyarrow
 from wolframclient.utils.dispatch import Dispatch
 
 encoder = Dispatch()
@@ -87,7 +88,7 @@ def encode_multiindex_as_dataset(serializer, o, length):
 
 PANDAS_PROPERTIES = {
     "pandas_series_head": {"dataset", "list", "association"},
-    "pandas_dataframe_head": {"dataset", "association"},
+    "pandas_dataframe_head": {"dataset", "association", "tabular"},
     "timeseries": True,
 }
 
@@ -169,11 +170,21 @@ def encode_dataframe_as_dataset(serializer, o, length):
     )
 
 
+def encode_dataframe_as_tabular(serializer, o):
+    sink = pyarrow.BufferOutputStream()
+    batch = pyarrow.record_batch(o)
+    strm = pyarrow.ipc.new_stream(sink, batch.schema)
+    strm.write_batch(batch)
+    buf = sink.getvalue()
+    return serializer.serialize_bytes(buf)
+
 @encoder.dispatch(pandas.DataFrame)
 def encoder_panda_dataframe(serializer, o):
     head = serializer.get_property("pandas_dataframe_head", d=None)
     if head is None or head == "dataset":
         return encode_dataframe_as_dataset(serializer, o, safe_pandas_length(o.index))
+    elif head == "tabular":
+        return encode_dataframe_as_tabular(serializer, o)
     elif head in PANDAS_PROPERTIES["pandas_dataframe_head"]:
         return encode_dataframe_as_assoc(serializer, o, safe_pandas_length(o.index))
     else:
