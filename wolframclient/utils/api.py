@@ -170,7 +170,7 @@ pandas = API(
 pyarrow = API(
     BufferOutputStream="pyarrow.BufferOutputStream",
     record_batch="pyarrow.record_batch",
-    new_stream="pyarrow.ipc.new_stream"
+    ipc="pyarrow.ipc"
 )
 
 aiohttp = API(
