@@ -176,7 +176,10 @@ def encode_dataframe_as_tabular(serializer, o):
     strm = pyarrow.ipc.new_stream(sink, batch.schema)
     strm.write_batch(batch)
     buf = sink.getvalue()
-    return serializer.serialize_bytes(buf)
+    return serializer.serialize_function(
+        serializer.serialize_symbol(b"ImportByteArray"),
+        (serializer.serialize_bytes(buf), serializer.serialize_string("ArrowIPC"))
+    )
 
 @encoder.dispatch(pandas.DataFrame)
 def encoder_panda_dataframe(serializer, o):
