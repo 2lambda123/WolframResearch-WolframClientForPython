@@ -172,7 +172,7 @@ pyarrow = API(
     Table="pyarrow.Table",
     BufferOutputStream="pyarrow.BufferOutputStream",
     record_batch="pyarrow.record_batch",
-    ipc="pyarrow.ipc"
+    ipc="pyarrow.ipc",
 )
 
 aiohttp = API(

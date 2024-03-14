@@ -3,8 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from collections import OrderedDict
 from itertools import starmap
 
-from wolframclient.utils.api import pandas
-from wolframclient.utils.api import pyarrow
+from wolframclient.utils.api import pandas, pyarrow
 from wolframclient.utils.dispatch import Dispatch
 
 encoder = Dispatch()
@@ -179,8 +178,9 @@ def encode_dataframe_as_tabular(serializer, o):
     buf = sink.getvalue()
     return serializer.serialize_function(
         serializer.serialize_symbol(b"ImportByteArray"),
-        (serializer.serialize_bytes(buf), serializer.serialize_string("ArrowIPC"))
+        (serializer.serialize_bytes(buf), serializer.serialize_string("ArrowIPC")),
     )
+
 
 @encoder.dispatch(pandas.DataFrame)
 def encoder_panda_dataframe(serializer, o):
