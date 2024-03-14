@@ -11,11 +11,12 @@ ast = API(
     ClassDef="ast.ClassDef",
 )
 
-pytz = API(
+timezone = API(
     FixedOffset="pytz.FixedOffset",
     timezone="pytz.timezone",
     utc="pytz.utc",
     UnknownTimeZoneError="pytz.UnknownTimeZoneError",
+    ZoneInfo="zoneinfo.ZoneInfo",
 )
 
 json = API(
@@ -189,7 +190,4 @@ aiohttp = API(
 
 ssl = API(SSLContext="ssl.SSLContext", create_default_context="ssl.create_default_context")
 
-externalevaluate = API(
-    execute_from_file="wolframclient.utils.externalevaluate.execute_from_file",
-    start_zmq_loop="wolframclient.utils.externalevaluate.start_zmq_loop",
-)
+externalevaluate = API(start_zmq_loop="wolframclient.utils.externalevaluate.start_zmq_loop")

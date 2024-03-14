@@ -11,7 +11,7 @@ encoder = Dispatch()
 
 
 def safe_pandas_length(o):
-    """ Return the length of a pandas Series and DataFrame as expected for WL serialization.
+    """Return the length of a pandas Series and DataFrame as expected for WL serialization.
 
     - The length of a Series is the only value of the tuple `shape`.
     - The length of a dataframe is the number of columns. It's the second value of `shape`.
@@ -66,7 +66,7 @@ def encode_as_timeseries(serializer, o, length):
 
 def _distribute_multikey(o):
     expr_dict = OrderedDict()
-    for multikey, value in o.iteritems():
+    for multikey, value in o.items():
         cur_dict = expr_dict
         for key in multikey[:-1]:
             if key not in cur_dict:
@@ -129,12 +129,13 @@ def normalized_prop_timeseries(serializer):
 
 
 def normalized_prop_pandas_series_head(serializer):
-    """ Check property `pandas_series_head` only if specified (not None). """
+    """Check property `pandas_series_head` only if specified (not None)."""
     prop = serializer.get_property("pandas_series_head", d=None)
     if prop and prop not in PANDAS_PROPERTIES["pandas_series_head"]:
         raise ValueError(
-            "Invalid value for property 'pandas_series_head'. Expecting one of (%s), got %s."
-            % (", ".join(PANDAS_PROPERTIES["pandas_series_head"]), prop)
+            "Invalid value for property 'pandas_series_head'. Expecting one of ({}), got {}.".format(
+                ", ".join(PANDAS_PROPERTIES["pandas_series_head"]), prop
+            )
         )
     return prop
 
@@ -192,6 +193,7 @@ def encoder_panda_dataframe(serializer, o):
         return encode_dataframe_as_assoc(serializer, o, safe_pandas_length(o.index))
     else:
         raise ValueError(
-            "Invalid value for property 'pandas_dataframe_head'. Expecting one of (%s), got %s."
-            % (", ".join(PANDAS_PROPERTIES["pandas_dataframe_head"]), head)
+            "Invalid value for property 'pandas_dataframe_head'. Expecting one of ({}), got {}.".format(
+                ", ".join(PANDAS_PROPERTIES["pandas_dataframe_head"]), head
+            )
         )

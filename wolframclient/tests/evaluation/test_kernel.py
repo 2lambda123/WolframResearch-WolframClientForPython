@@ -232,7 +232,7 @@ class TestCase(TestCaseSettings):
     def test_built_in_symbols(self):
         self.assertEqual(self.kernel_session.evaluate(wl.Null), None)
         self.assertEqual(self.kernel_session.evaluate(None), None)
-        self.assertEqual(self.kernel_session.evaluate(wlexpr("None")), WLSymbol("None"))
+        self.assertEqual(self.kernel_session.evaluate(wlexpr("None")), None)
         self.assertEqual(self.kernel_session.evaluate(wlexpr("True")), True)
         self.assertEqual(self.kernel_session.evaluate(True), True)
         self.assertEqual(self.kernel_session.evaluate(wlexpr("False")), False)
@@ -240,7 +240,7 @@ class TestCase(TestCaseSettings):
         self.assertEqual(self.kernel_session.evaluate(wl.StringQ("foo")), True)
 
     def test_eval_many(self):
-        exprs = [("%s+%s" % (i, i)) for i in range(10)]
+        exprs = [("{}+{}".format(i, i)) for i in range(10)]
         expected = [i + i for i in range(10)]
         res = self.kernel_session.evaluate_many(exprs)
         self.assertEqual(res, expected)
