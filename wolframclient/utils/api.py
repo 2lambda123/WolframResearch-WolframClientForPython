@@ -168,6 +168,13 @@ pandas = API(
     bdate_range="pandas.bdate_range",
 )
 
+pyarrow = API(
+    Table="pyarrow.Table",
+    BufferOutputStream="pyarrow.BufferOutputStream",
+    record_batch="pyarrow.record_batch",
+    ipc="pyarrow.ipc",
+)
+
 aiohttp = API(
     Response="aiohttp.web.Response",
     ClientResponse="aiohttp.ClientResponse",
