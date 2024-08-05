@@ -75,6 +75,7 @@ wolfram_encoder.register_modules(
     # builtin libraries
     sys="wolframclient.serializers.encoders.builtin.encoder",
     decimal="wolframclient.serializers.encoders.decimal.encoder",
+    io="wolframclient.serializers.encoders.io.encoder",
     datetime="wolframclient.serializers.encoders.datetime.encoder",
     fractions="wolframclient.serializers.encoders.fractions.encoder",
     zoneinfo="wolframclient.serializers.encoders.zoneinfo.encoder",
